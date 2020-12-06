@@ -3,34 +3,34 @@ const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const winston = require("winston");
- 
+
 const serverOption = {
-	headless: true,
-	qrTimeout: 40,
-	authTimeout: 40,
-	autoRefresh: true,
-	qrRefreshS: 15,
-	devtools: false,
-	cacheEnabled: false,
-	chromiumArgs: [
-	  '--no-sandbox',
-	  '--disable-setuid-sandbox'
-	]
-  }
-  
-  const opsys = process.platform;
-  if (opsys == "win32" || opsys == "win64") {
-	serverOption['executablePath'] = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe';
-  } else if (opsys == "linux") {
-	serverOption['browserRevision'] = '737027';
-  } else if (opsys == "darwin") {
-	serverOption['executablePath'] = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  headless: true,
+  qrTimeout: 40,
+  authTimeout: 40,
+  autoRefresh: true,
+  qrRefreshS: 15,
+  devtools: false,
+  cacheEnabled: false,
+  chromiumArgs: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox'
+  ]
 }
-  
+
+const opsys = process.platform;
+if (opsys == "win32" || opsys == "win64") {
+  serverOption['executablePath'] = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe';
+} else if (opsys == "linux") {
+  serverOption['browserRevision'] = '737027';
+} else if (opsys == "darwin") {
+  serverOption['executablePath'] = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+}
+
 wa.create(serverOption).then(async client => await start(client))
-.catch(e => {
-  console.log('Error', e.message);
-});
+  .catch(e => {
+    console.log('Error', e.message);
+  });
 
 const PORT = process.env.PORT;
 
@@ -40,10 +40,9 @@ const start = async (client) => {
   app.use(bodyParser.json());
   app.use(bodyParser.raw());
   app.get("/", (req, res) => res.send("Hello"));
-   app.post("/kirim-pesan", async (req, res) => {
-    const  pesan = await client.sendText(req.body.no_hp + "@c.us", req.body.pesan);
+  app.post("/kirim-pesan", async (req, res) => {
+    // client.sendText(req.body.no_hp + "@c.us", req.body.pesan);
     //send images
-    // client.sendImage(req.body.no_hp + '@c.us', req.body.gambar);
     //send video / foto
     // client.sendFileFromUrl(req.body.no_hp + '@c.us','https://i.giphy.com/media/oYtVHSxngR3lC/200w.mp4','nama_file');
     // send file pdf /doc
@@ -53,13 +52,8 @@ const start = async (client) => {
     //     "nama_file"
     //   );
     // client.sendYoutubeLink(req.body.no_hp + '@c.us','https://www.youtube.com/watch?v=_bSB6Ed2Fnk','Ytube');
-	var status='' ;
-	if(pesan == false){
-		status = "Pesan Gagal DIkirim";
-	}else{
-		status = "Pesan Berhasil Dikirim";		
-	}
-    res.send([{'pesan': status}]);
+    client.sendImage(req.body.no_hp + "@c.us", req.body.gambar, "QR CODE", req.body.pesan);
+    res.send([{ 'pesan': "BERHASIL" }]);
   });
 
   // app.listen(4000, () => console.log('listenig on localhost:4000'));
@@ -69,5 +63,5 @@ const start = async (client) => {
     wa.msgHandler(client, message, mqttClient);
   });
 }
- 
+
 
